@@ -14,7 +14,7 @@ import openfl.gl.GLUniformLocation;
 class AGLSLContext3D extends Context3D
 {
 	private var _yFlip:Float;
- 
+
 	public function new ()
 	{
 		super();
@@ -68,8 +68,8 @@ class AGLSLContext3D extends Context3D
     override public function drawTriangles(indexBuffer:IndexBuffer3D, firstIndex:Int = 0, numTriangles:Int = -1):Void  
 	{ 
 	     //todo 
-		var location:GLUniformLocation = GL.getUniformLocation(currentProgram.glProgram, "yflip");   
-		GL.uniform1f(location, this._yFlip);
+
+		GL.uniform1f(currentProgram.yFlipLoc(), this._yFlip);
 		super.drawTriangles(indexBuffer, firstIndex, numTriangles);
 	}
 	

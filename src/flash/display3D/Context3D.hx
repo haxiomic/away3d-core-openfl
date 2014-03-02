@@ -344,14 +344,14 @@ class Context3D
         data.position = byteArrayOffset;
         for(i in 0...numRegisters)
         {
-            var locationName = getUniformLocationNameFromAgalRegisterIndex(programType, firstRegister + i);
-            setGLSLProgramConstantsFromByteArray(locationName,data);
+            var location:Location = programType == Context3DProgramType.VERTEX ? currentProgram.vsUniformLocationFromAgal(firstRegister + i) : currentProgram.fsUniformLocationFromAgal(firstRegister + i);
+            setGLSLProgramConstantsFromByteArray(location,data);
         }
    }
 
    public function setProgramConstantsFromMatrix(programType:Context3DProgramType, firstRegister:Int, matrix:Matrix3D, transposedMatrix:Bool = false):Void 
    {
-      var locationName = getUniformLocationNameFromAgalRegisterIndex(programType, firstRegister);
+      //var location:Location = programType == Context3DProgramType.VERTEX ? currentProgram.vsUniformLocationFromAgal(firstRegister) : currentProgram.fsUniformLocationFromAgal(firstRegister);
       //setGLSLProgramConstantsFromMatrix(locationName,matrix,transposedMatrix);
       setProgramConstantsFromVector(programType, firstRegister, matrix.rawData, 16);
    }
@@ -361,30 +361,29 @@ class Context3D
         for(i in 0...numRegisters)
         {
             var currentIndex = i * 4;
-            var locationName = getUniformLocationNameFromAgalRegisterIndex(programType, firstRegister + i);
-            setGLSLProgramConstantsFromVector4(locationName,data,currentIndex);
+            //var locationName = getUniformLocationNameFromAgalRegisterIndex(programType, firstRegister + i);
+            //setGLSLProgramConstantsFromVector4(locationName,data,currentIndex);
+            var location:Location = programType == Context3DProgramType.VERTEX ? currentProgram.vsUniformLocationFromAgal(firstRegister + i) : currentProgram.fsUniformLocationFromAgal(firstRegister + i);
+            setGLSLProgramConstantsFromVector4(location, data, currentIndex);
         }
    }
 
-    public function setGLSLProgramConstantsFromByteArray(locationName : String, data:ByteArray, byteArrayOffset : Int = -1):Void 
+    public function setGLSLProgramConstantsFromByteArray(location : Location, data:ByteArray, byteArrayOffset : Int = -1):Void 
     {
         if (byteArrayOffset != -1)
         {
             data.position = byteArrayOffset;
         }
-        var location = GL.getUniformLocation(currentProgram.glProgram, locationName);
         GL.uniform4f(location, data.readFloat(),data.readFloat(),data.readFloat(),data.readFloat());
     }
 
-    public function setGLSLProgramConstantsFromMatrix(locationName : String, matrix:Matrix3D, transposedMatrix:Bool = false):Void 
+    public function setGLSLProgramConstantsFromMatrix(location : Location, matrix:Matrix3D, transposedMatrix:Bool = false):Void 
     {
-        var location = GL.getUniformLocation(currentProgram.glProgram, locationName);
         GL.uniformMatrix3D(location, !transposedMatrix, matrix);
     }
 
-    public function setGLSLProgramConstantsFromVector4(locationName : String, data:Vector<Float>, startIndex : Int = 0):Void 
+    public function setGLSLProgramConstantsFromVector4(location : Location, data:Vector<Float>, startIndex : Int = 0):Void 
     {
-        var location = GL.getUniformLocation(currentProgram.glProgram, locationName);
         GL.uniform4f(location, data[startIndex],data[startIndex+1],data[startIndex+2],data[startIndex+3]);
     }
 
@@ -428,7 +427,7 @@ class Context3D
         GL.viewport(0, 0, texture.width, texture.height); 
         var frameBufferStatus = GL.checkFramebufferStatus(GL.FRAMEBUFFER);
         switch(frameBufferStatus){
-            case GL.FRAMEBUFFER_COMPLETE: trace("FRAMEBUFFER_COMPLETE");
+            case GL.FRAMEBUFFER_COMPLETE: //trace("FRAMEBUFFER_COMPLETE");
             case GL.FRAMEBUFFER_INCOMPLETE_ATTACHMENT: trace("FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
             case GL.FRAMEBUFFER_INCOMPLETE_DIMENSIONS: trace("FRAMEBUFFER_INCOMPLETE_DIMENSIONS");
             case GL.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: trace("FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
@@ -561,14 +560,13 @@ class Context3D
    }
 
      public function setTextureAt (sampler:Int, texture:TextureBase):Void {
-        var locationName =  "fs" + sampler;
-        setGLSLTextureAt(locationName, texture, sampler);
+        var location = currentProgram.fsampUniformLocationFromAgal(sampler);
+        setGLSLTextureAt(location, texture, sampler);
     }
 
 
-    public function setGLSLTextureAt (locationName:String, texture:TextureBase, textureIndex : Int):Void {
+    public function setGLSLTextureAt (location:Location, texture:TextureBase, textureIndex : Int):Void {
 
-        var location = GL.getUniformLocation (currentProgram.glProgram, locationName);
         switch(textureIndex){
             case 0 : GL.activeTexture (GL.TEXTURE0);
             case 1 : GL.activeTexture (GL.TEXTURE1);
@@ -611,19 +609,15 @@ class Context3D
             setTextureParameters(texture, Context3DWrapMode.REPEAT, Context3DTextureFilter.NEAREST, Context3DMipFilter.MIPNONE);
         }
 	
-
-
     }
 
     public function setVertexBufferAt(index:Int,buffer:VertexBuffer3D, bufferOffset:Int = 0, ?format:Context3DVertexBufferFormat):Void 
     {
-        var locationName = "va" + index;
-        setGLSLVertexBufferAt(locationName, buffer, bufferOffset, format);
+        setGLSLVertexBufferAt(currentProgram.vaUniformLocationFromAgal(index), buffer, bufferOffset, format);
     }
 
-   public function setGLSLVertexBufferAt(locationName, buffer:VertexBuffer3D, bufferOffset:Int = 0, ?format:Context3DVertexBufferFormat):Void 
+   public function setGLSLVertexBufferAt(location:Int, buffer:VertexBuffer3D, bufferOffset:Int = 0, ?format:Context3DVertexBufferFormat):Void 
    {
-      var location = GL.getAttribLocation(currentProgram.glProgram,locationName);
 
       if (buffer == null)
       {
