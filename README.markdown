@@ -5,4 +5,4 @@
 -----------------
 ####Current Changes
 
-- repeated calls during render-time to getUniformLocation & getAttribLocation were a bottleneck so they've been replaced (in an adhoc manner for now) with caches
+- repeated calls during render-time to **getUniformLocation** & **getAttribLocation** were a bottleneck so they've been replaced (in an adhoc manner for now) with caches
